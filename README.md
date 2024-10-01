@@ -1,12 +1,19 @@
  
 # Degen Game
-Degen Game is a Solidity smart contract that mints tokens for players in the game, and players can exchange the token for rewards in the in-game store. 
+Degen Game is a Solidity smart contract that mints tokens for players in the game, and players can exchange the tokens for rewards in the in-game store. 
 
 ## Description
 This is an ERC20 upgrade, which means it has all the functions of the ERC20 and also other functions. It inherits the ERC20 and Ownable smart contracts.
-It is meant to be a gamer token, where players of the game can earn the token, use the token for in-game transaction and also be able to send it to each other. Players can earn token, check their balance, transfer token, and redeem items on the platform witht their token. 
+It is meant to be a gamer token, where players of the game can earn the token, use the token for in-game transactions, and also be able to send it to each other. Players can earn tokens, check their balance, transfer tokens, and redeem items on the platform with their tokens. 
 
-## Smart Contract
+## Getting Started
+
+### Executing program
+
+To run this program, you can use Remix, an online Solidity IDE. To get started, go to the Remix website at https://remix.ethereum.org/.
+
+Once on the Remix website, create a new file by clicking on the "+" icon in the left-hand sidebar. Save the file with a .sol extension (e.g., DegenGame.sol). Copy and paste the following code into the file:
+
 ```javascript
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
@@ -151,9 +158,13 @@ error PROP_DOES_NOT_EXIST();
 error THE_RECEIVER_IS_NOT_A_PLAYER();
 error PLAYER_NOT_REGISTERED();
 error CANNOT_TRANSFER_ADDRESS_ZERO();
-
 ```
-## Getting Started
+
+To compile the code, click on the "Solidity Compiler" tab in the left-hand sidebar. Make sure the "Compiler" option is set to "0.8.17" (or another compatible version), and then click on the "Compile DegenGame.sol" button.
+
+Once the code is compiled, you can deploy the contract by clicking on the "Deploy & Run Transactions" tab in the left-hand sidebar. Switch the Environment to Injected Provider - Metamask and make sure the network switched to on your metamask is the Avalanche Fuji network. Once that is done Select the "DegenGame" contract from the dropdown menu, and then click on the "Deploy" button.
+
+Once the contract is deployed, you can interact with it the contract.
 
 ## Authors
 Michael Dean
