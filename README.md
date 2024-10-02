@@ -4,7 +4,7 @@ Degen Game is a Solidity smart contract that mints tokens for players in the gam
 
 ## Description
 This is an ERC20 upgrade, which means it has all the functions of the ERC20 and also other functions. It inherits the ERC20 and Ownable smart contracts.
-It is meant to be a gamer token, where players of the game can earn the token, use the token for in-game transactions, and also be able to send it to each other. Players can earn tokens, check their balance, transfer tokens, and redeem items on the platform with their tokens. 
+It is meant to be a gamer token, where players of the game can earn the token, use the token for in-game transactions, and send it to each other. Players can earn tokens, check their balance, transfer tokens, and redeem items on the platform with their tokens. 
 
 ## Getting Started
 
@@ -12,7 +12,7 @@ It is meant to be a gamer token, where players of the game can earn the token, u
 
 To run this program, you can use Remix, an online Solidity IDE. To get started, go to the Remix website at https://remix.ethereum.org/.
 
-Once on the Remix website, create a new file by clicking on the "+" icon in the left-hand sidebar. Save the file with a .sol extension (e.g., DegenGame.sol). Copy and paste the following code into the file:
+Once on the Remix website, create a new file by clicking the "+" icon in the left-hand sidebar. Save the file with a .sol extension (e.g., DegenGame.sol). Copy and paste the following code into the file:
 
 ```javascript
 // SPDX-License-Identifier: MIT
@@ -31,29 +31,33 @@ contract DegenGame is ERC20, Ownable {
 
     struct DegenItem {
         address owner;
-        bytes32 itemId;
+        uint8 itemId;
         string itemName;
         uint256 worth;
     }
 
     mapping(address => Player) public players;
-    mapping(bytes32 => DegenItem) public degenItems;
-    mapping(address => mapping(bytes32 => DegenItem)) public playerItems;
+    mapping(uint8 => DegenItem) public degenItems;
+    mapping(address => mapping(uint8 => DegenItem)) public playerItems;
 
     event PlayerRegisters(address player, bool success);
     event Transfered(address sender, address recipient, uint256 amount);
     event TokenBurnt(address owner, uint256 amount);
-    event ItemCreated(address owner, bytes32 _itemId, string _itemName);
-    event PropRedeemed(address newOwner, bytes32 itemId, string itemName);
+    event ItemCreated(address owner, uint8 _itemId, string _itemName);
+    event PropRedeemed(address newOwner, uint8 itemId, string itemName);
 
-    constructor() ERC20("Degen", "DGN") Ownable(msg.sender) {}
+    constructor() ERC20("Degen", "DGN") Ownable(msg.sender) {
+        addDegenItem(1, "Item1", 200);
+        addDegenItem(2, "Item2", 400);
+        addDegenItem(3, "Item3", 500);
+    }
 
     function addressZeroCheck() private view {
         if (msg.sender == address(0)) revert ZERO_ADDRESS_NOT_ALLOWED();
     }
 
-    function isRegistered() private view {
-        if (!players[msg.sender].isRegistered) revert YOU_ARE_NOT_REGISTERED();
+    function isRegistered(address _user) private view {
+        if (!players[_user].isRegistered) revert NOT_REGISTERED(_user);
     }
 
     function playerRegister() external {
@@ -68,7 +72,7 @@ contract DegenGame is ERC20, Ownable {
     }
 
     function mint(address _to, uint256 _amount) public onlyOwner {
-        if (!players[_to].isRegistered) revert PLAYER_NOT_REGISTERED();
+        isRegistered(_to);
         _mint(_to, _amount);
     }
 
@@ -76,9 +80,9 @@ contract DegenGame is ERC20, Ownable {
         external
         returns (bool)
     {
-        isRegistered();
+        isRegistered(msg.sender);
         if (_recipient == address(0)) revert CANNOT_TRANSFER_ADDRESS_ZERO();
-        if (!players[_recipient].isRegistered) revert PLAYER_NOT_REGISTERED();
+        if (!players[_recipient].isRegistered) revert NOT_REGISTERED(_recipient);
 
         if (transfer(_recipient, _amount)) {
             emit Transfered(msg.sender, _recipient, _amount);
@@ -89,24 +93,22 @@ contract DegenGame is ERC20, Ownable {
     }
 
     function getBalance() external view returns (uint256) {
-        isRegistered();
+        isRegistered(msg.sender);
         return balanceOf(msg.sender);
     }
 
     function burnToken(uint256 _amount) external {
-        isRegistered();
+        isRegistered(msg.sender);
 
         _burn(msg.sender, _amount);
 
         emit TokenBurnt(msg.sender, _amount);
     }
 
-    function addDegenItem(string calldata _itemName, uint256 _amount)
-        external
-        onlyOwner
+    function addDegenItem(uint8 _itemId, string memory _itemName, uint256 _amount)
+        private 
+        
     {
-        bytes32 _itemId = keccak256(abi.encodePacked(_itemName, _amount));
-
         DegenItem storage _degenItem = degenItems[_itemId];
 
         _degenItem.owner = address(this);
@@ -119,8 +121,8 @@ contract DegenGame is ERC20, Ownable {
         emit ItemCreated(address(this), _itemId, _itemName);
     }
 
-    function playerRedeemItem(bytes32 _itemId) external {
-        isRegistered();
+    function playerRedeemItem(uint8 _itemId) external {
+        isRegistered(msg.sender);
 
         DegenItem storage _degenItem = degenItems[_itemId];
 
@@ -151,12 +153,11 @@ error OWNER_CANNOT_REGISTER();
 error N0_PLAYERS_TO_REWARD();
 error YOU_CANNOT_TRANSFER_TO_ADDRESS_ZERO();
 error TRANSFER_FAILED();
-error YOU_ARE_NOT_REGISTERED();
+error NOT_REGISTERED(address);
 error PLAYER_DOES_NOT_EXIST();
 error PLAYER_NOT_SUSPENDED();
 error PROP_DOES_NOT_EXIST();
 error THE_RECEIVER_IS_NOT_A_PLAYER();
-error PLAYER_NOT_REGISTERED();
 error CANNOT_TRANSFER_ADDRESS_ZERO();
 ```
 
